@@ -6,13 +6,32 @@ from dbconnector import DatabaseOperations
 
 app = Flask(__name__)
 
+def check_camera_availability():
+    index = 0
+    arr = []
+    # Try to access multiple camera indices
+    while True:
+        cap = cv2.VideoCapture(index)
+        if not cap.isOpened():
+            break
+        arr.append(index)
+        cap.release()
+        index += 1
+    return arr
+
+camera_indices = check_camera_availability()
+if not camera_indices:
+    print("No cameras found.")
+    # Handle the error or provide a fallback
+else:
+    cap = cv2.VideoCapture(camera_indices[0]) 
 # Initialize video capture and hand detector
-cap = cv2.VideoCapture(0)
 
 if not cap.isOpened():
     print("Error: Camera not accessible.")
     exit(1)  # Change the index if needed
 detector = HandDetector(detectionCon=0.9)
+
 
 # Instantiate the DatabaseOperations class for MongoDB
 databaseConnection = DatabaseOperations()
