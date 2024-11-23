@@ -1,36 +1,23 @@
-from bson import ObjectId
 import os
 import pymongo
+import cv2
+import numpy as np
 from flask import Flask, render_template, Response, request, jsonify
 from cvzone.HandTrackingModule import HandDetector
 from dotenv import load_dotenv  # Optional, for loading environment variables in development
 from dbconnector import DatabaseOperations
+
 # Load environment variables from .env file (if present)
 load_dotenv()
 
 app = Flask(__name__)
 
 # Instantiate the DatabaseOperations class for MongoDB
-# class DatabaseOperations:
-#     def __init__(self):
-#         # Use the environment variable for MongoDB connection
-#         self.client = pymongo.MongoClient(os.environ.get("MONGODB_URI"))
-#         self.db = self.client['viquiz']  # Database name
-#         self.collection = self.db['questions']  # Collection name
-
-#     def insert_question(self, collection_name, document):
-#         try:
-#             self.db[collection_name].insert_one(document)
-#             return True
-#         except Exception as e:
-#             print("Error inserting question:", e)
-#             return False
-
-#     def get_questions_from_database(self, collection_name):
-#         return list(self.db[collection_name].find())
-
 databaseConnection = DatabaseOperations()
 detector = HandDetector(detectionCon=0.9)
+
+current_question_index = 0
+questions = []
 
 @app.route('/')
 @app.route('/home')
@@ -66,24 +53,69 @@ def add_question():
 
 @app.route('/get_questions', methods=['GET'])
 def get_questions():
+    global questions
     try:
         questions = databaseConnection.get_questions_from_database("demo")
-        
-        # Convert ObjectId to string and filter out _id
-        questions_without_id = []
-        for question in questions:
-            question_dict = {k: (str(v) if isinstance(v, ObjectId) else v) for k, v in question.items() if k != "_id"}
-            questions_without_id.append(question_dict)
-        
-        return jsonify(questions_without_id), 200
+        return jsonify(questions), 200
     except Exception as e:
         print("Error fetching questions:", e)
         return jsonify({"error": "Failed to fetch questions"}), 500
 
 def frames():
-    # This is where you would handle video frames if needed.
-    # Implement this if server-side processing of video is required.
-    pass  # Placeholder for now
+    global current_question_index
+    cap = cv2.VideoCapture(0)  # Open the webcam
+
+    while True:
+        success, frame = cap.read()
+        if not success:
+            break
+
+        # Flip the frame horizontally for a selfie-view effect
+        frame = cv2.flip(frame, 1)
+
+        if questions and current_question_index < len(questions):
+            question = questions[current_question_index]
+            text = question["question"]
+            choices = [
+                question["choice1"],
+                question["choice2"],
+                question["choice3"],
+                question["choice4"]
+            ]
+            
+            # Draw question text
+            cv2.putText(frame, text, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+
+            # Draw choices
+            for i, choice in enumerate(choices):
+                choice_text = f"{i + 1}. {choice}"
+                cv2.putText(frame, choice_text, (50, 100 + i * 40), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+
+        # Hand detection and answer selection logic
+        hands, frame = detector.findHands(frame)  # Find hands in the frame
+        if hands:  # If hands are detected
+            hand = hands[0]  # Get the first hand
+            x, y, w, h = hand['bbox']  # Get the bounding box of the hand
+
+            # Check if the hand is hovering over any of the choices
+            for i in range(len(choices)):
+                if 100 + i * 40 < y < 100 + i * 40 + 40:  # Check if hand is over the choice
+                    cv2.rectangle(frame, (50, 100 + i * 40), (400, 140 + i * 40), (0, 255, 0), 2)  # Highlight choice
+                    if hand['lmList'][8][1] < 200:  # If index finger is up (or you can set another condition)
+                        current_question_index += 1
+                        if current_question_index >= len(questions):  # Reset to zero if the quiz is complete
+                            current_question_index = 0
+                        break
+
+        # Show the frame
+        cv2.imshow('Video Feed', frame)
+
+        # Press 'q' to quit the window
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))  # Default to 5000 if PORT is not set
