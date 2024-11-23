@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ViQuiz - Visual Quiz Game</title>
-    <link rel="stylesheet" href="../static/homepage.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}">
 </head>
 <body>
     
@@ -19,6 +19,7 @@
                 <canvas id="canvas" width="1200" height="700" style="display:none;"></canvas>
             </div>
             <button id="start-button">Start Camera</button>
+            <div id="error-message" style="color: red;"></div> <!-- Error message display -->
         </section>
     </main>
 
@@ -30,29 +31,31 @@
         const video = document.getElementById('video');
         const canvas = document.getElementById('canvas');
         const startButton = document.getElementById('start-button');
+        const errorMessage = document.getElementById('error-message');
 
         // Start the camera
         async function startCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
-                startButton.style.display = 'none'; // Hide start button after starting camera
-                processVideo(); // Start processing the video frames
+                errorMessage.textContent = ""; // Clear any previous error messages
             } catch (error) {
                 console.error("Error accessing camera: ", error);
-                alert("Unable to access the camera. Please check your permissions.");
+                errorMessage.textContent = "Unable to access the camera. Please check your permissions.";
             }
         }
 
-        // Process video frames
+        startButton.addEventListener('click', startCamera);
+
+        // Process video frames and implement further functionality as needed
         function processVideo() {
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            // Here you can add your hand tracking or any other processing
+            // Additional processing can go here
             requestAnimationFrame(processVideo);
         }
 
-        startButton.addEventListener('click', startCamera);
+        video.addEventListener('loadeddata', processVideo);
     </script>
 </body>
 </html>
