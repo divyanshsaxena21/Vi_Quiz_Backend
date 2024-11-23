@@ -1,0 +1,12 @@
+version: 1
+services:
+  - type: web
+    name: viquiz
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "python app.py"
+    environment:
+      MONGODB_URI: "mongodb+srv://admin:kanpur@cluster0.9ltj5c6.mongodb.net/"  # Replace with your MongoDB connection string
+  
