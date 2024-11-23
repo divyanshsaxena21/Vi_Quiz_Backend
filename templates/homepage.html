@@ -11,17 +11,48 @@
     <header>
         <h1>Welcome to ViQuiz - Visual Quiz Game</h1>
     </header>
+    
     <main>
         <section id="quiz-container">
             <div id="root">
-                <img class="video" id="video_feed" src="{{ url_for('video_feed') }}"  width="1000" height="550" style="border:1px solid #000;">
+                <video id="video" width="1200" height="700" autoplay></video>
+                <canvas id="canvas" width="1200" height="700" style="display:none;"></canvas>
             </div>
+            <button id="start-button">Start Camera</button>
         </section>
     </main>
+
     <footer>
         <p>&copy; 2023 ViQuiz. All rights reserved.</p>
     </footer>
-    <!-- <script src="./homejs.js"></script> -->
-    
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const startButton = document.getElementById('start-button');
+
+        // Start the camera
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (error) {
+                console.error("Error accessing camera: ", error);
+                alert("Unable to access the camera. Please check your permissions.");
+            }
+        }
+
+        startButton.addEventListener('click', startCamera);
+
+        // Add functionality to capture video frames and process them
+        function processVideo() {
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // Here you can add your hand tracking or any other processing
+            requestAnimationFrame(processVideo);
+        }
+
+        video.addEventListener('loadeddata', processVideo);
+    </script>
 </body>
 </html>
