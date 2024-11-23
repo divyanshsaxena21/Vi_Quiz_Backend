@@ -2,6 +2,10 @@ import os
 import pymongo
 from flask import Flask, render_template, Response, request, jsonify
 from cvzone.HandTrackingModule import HandDetector
+from dotenv import load_dotenv  # Optional, for loading environment variables in development
+
+# Load environment variables from .env file (if present)
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -59,23 +63,14 @@ def add_question():
     else:
         return jsonify({"error": "Failed to add question"}), 500
 
-# New endpoint to get questions from the database
 @app.route('/get_questions', methods=['GET'])
 def get_questions():
-    questions = databaseConnection.get_questions_from_database("demo")
-    formatted_questions = []
-    for question in questions:
-        formatted_questions.append({
-            "qNo": question.get("qNo"),
-            "question": question.get("question"),
-            "choices": [
-                question.get("choice1"),
-                question.get("choice2"),
-                question.get("choice3"),
-                question.get("choice4")
-            ]
-        })
-    return jsonify(formatted_questions)
+    try:
+        questions = databaseConnection.get_questions_from_database("demo")
+        return jsonify(questions), 200
+    except Exception as e:
+        print("Error fetching questions:", e)
+        return jsonify({"error": "Failed to fetch questions"}), 500
 
 def frames():
     # This is where you would handle video frames if needed.
@@ -83,4 +78,5 @@ def frames():
     pass  # Placeholder for now
 
 if __name__ == "__main__":
-    app.run(debug=True, host='0.0.0.0', port=5475)
+    port = int(os.environ.get("PORT", 5000))  # Default to 5000 if PORT is not set
+    app.run(host='0.0.0.0', port=port)
