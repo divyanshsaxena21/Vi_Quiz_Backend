@@ -31,104 +31,89 @@
         <p>&copy; 2023 ViQuiz. All rights reserved.</p>
     </footer>
 
-   <script>
-    const video = document.getElementById('video');
-    const canvas = document.getElementById('canvas');
-    const startButton = document.getElementById('start-button');
-    const errorMessage = document.getElementById('error-message');
-    const questionContainer = document.getElementById('question-container');
-    const questionText = document.getElementById('question-text');
-    const choicesContainer = document.getElementById('choices-container');
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const startButton = document.getElementById('start-button');
+        const errorMessage = document.getElementById('error-message');
+        const questionContainer = document.getElementById('question-container');
+        const questionText = document.getElementById('question-text');
+        const choicesContainer = document.getElementById('choices-container');
 
-    let currentQuestionIndex = 0;
-    let questions = []; // To hold fetched questions
-    let score = 0; // To track the score
+        let currentQuestionIndex = 0;
+        let questions = []; // To hold fetched questions
 
-    // Function to start the camera
-    async function startCamera() {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            video.srcObject = stream;
-            errorMessage.textContent = ""; // Clear any previous error messages
-            questionContainer.style.display = 'block'; // Show the question container
-            await fetchQuestions(); // Fetch questions when camera starts
-        } catch (error) {
-            console.error("Error accessing camera: ", error);
-            errorMessage.textContent = "Unable to access the camera. Please check your permissions.";
-        }
-    }
-
-    // Function to fetch questions from the server
-    async function fetchQuestions() {
-        try {
-            const response = await fetch('/get_questions'); // Ensure you have this endpoint
-            if (!response.ok) throw new Error('Network response was not ok');
-            questions = await response.json();
-            console.log("Fetched questions:", questions); // Log questions to debug
-            displayQuestion(currentQuestionIndex); // Display the first question
-        } catch (error) {
-            console.error("Error fetching questions: ", error);
-            errorMessage.textContent = "Failed to load questions.";
-        }
-    }
-
-    // Function to display the current question and choices
-    function displayQuestion(index) {
-        if (index < questions.length) {
-            const question = questions[index];
-            questionText.textContent = question.question; // Set question text
-            choicesContainer.innerHTML = ''; // Clear previous choices
-            
-            // Create an array of choices from the separate fields
-            const choices = [
-                question.choice1,
-                question.choice2,
-                question.choice3,
-                question.choice4
-            ];
-
-            // Display the choices
-            choices.forEach((choice, i) => {
-                const choiceElement = document.createElement('button');
-                choiceElement.textContent = choice;
-                choiceElement.onclick = () => handleAnswer(i + 1, question.answer); // Handle answer click (pass 1-based index)
-                choicesContainer.appendChild(choiceElement);
-            });
-        } else {
-            questionText.textContent = "Quiz Completed!";
-            choicesContainer.innerHTML = '';
-            errorMessage.textContent = ""; // Clear any error messages
-        }
-    }
-
-    // Function to handle answer selection
-    function handleAnswer(selectedChoice, correctAnswer) {
-        // Logic to check the answer
-        if (selectedChoice === correctAnswer) {
-            score++;
-            alert("Correct! Your score is: " + score);
-        } else {
-            alert("Incorrect! The correct answer was: " + correctAnswer);
+        // Function to start the camera
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                errorMessage.textContent = ""; // Clear any previous error messages
+                questionContainer.style.display = 'block'; // Show the question container
+                await fetchQuestions(); // Fetch questions when camera starts
+            } catch (error) {
+                console.error("Error accessing camera: ", error);
+                errorMessage.textContent = "Unable to access the camera. Please check your permissions.";
+            }
         }
 
-        // Move to the next question
-        currentQuestionIndex++;
-        displayQuestion(currentQuestionIndex);
-    }
+        // Function to fetch questions from the server
+        async function fetchQuestions() {
+            try {
+                const response = await fetch('/get_questions'); // Ensure you have this endpoint
+                if (!response.ok) throw new Error('Network response was not ok');
+                questions = await response.json();
+                displayQuestion(currentQuestionIndex); // Display the first question
+            } catch (error) {
+                console.error("Error fetching questions: ", error);
+                errorMessage.textContent = "Failed to load questions.";
+            }
+        }
 
-    startButton.addEventListener('click', startCamera);
+        // Function to display the current question and choices
+        function displayQuestion(index) {
+            if (index < questions.length) {
+                const question = questions[index];
+                questionText.textContent = question.question; // Set question text
+                choicesContainer.innerHTML = ''; // Clear previous choices
+                // Create buttons for each choice
+                const choices = [question.choice1, question.choice2, question.choice3, question.choice4];
+                choices.forEach((choice, i) => {
+                    const choiceElement = document.createElement('button');
+                    choiceElement.textContent = choice;
+                    choiceElement.onclick = () => handleAnswer(i); // Handle answer click
+                    choicesContainer.appendChild(choiceElement);
+                });
+            } else {
+                questionText.textContent = "Quiz Completed!";
+                choicesContainer.innerHTML = '';
+            }
+        }
 
-    // Optional: Processing video frames (not implemented)
-    function processVideo() {
-        const context = canvas.getContext('2d');
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        // Further processing can go here
-        requestAnimationFrame(processVideo);
-    }
+        // Function to handle answer selection
+        function handleAnswer(selectedChoice) {
+            // Logic to check the answer (e.g., update score, move to next question)
+            const question = questions[currentQuestionIndex];
+            if (selectedChoice === question.answer - 1) { // Correct answer check
+                alert("Correct answer!");
+            } else {
+                alert("Incorrect answer. The correct answer was " + question.answer);
+            }
+            currentQuestionIndex++;
+            displayQuestion(currentQuestionIndex);
+        }
 
-    video.addEventListener('loadeddata', processVideo);
-</script>
+        startButton.addEventListener('click', startCamera);
 
+        // Optional: Processing video frames (not implemented)
+        function processVideo() {
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            // Further processing can go here
+            requestAnimationFrame(processVideo);
+        }
 
+        video.addEventListener('loadeddata', processVideo);
+    </script>
 </body>
 </html>
