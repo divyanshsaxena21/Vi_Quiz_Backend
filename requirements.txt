@@ -1,0 +1,7 @@
+flask
+pymongo
+opencv-python
+opencv-python-headless
+cvzone
+numpy
+gunicorn
