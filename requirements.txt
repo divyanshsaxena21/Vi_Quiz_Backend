@@ -6,3 +6,4 @@ cvzone
 numpy
 gunicorn
 mediapipe
+python-dotenv
