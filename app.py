@@ -5,7 +5,9 @@ from cvzone.HandTrackingModule import HandDetector
 from dbconnector import DatabaseOperations
 
 app = Flask(__name__)
-cap = cv2.VideoCapture(0)  # Open the default camera
+
+# Initialize video capture and hand detector
+cap = cv2.VideoCapture(0)  # Change the index if needed
 detector = HandDetector(detectionCon=0.9)
 
 # Instantiate the DatabaseOperations class for MongoDB
@@ -114,5 +116,11 @@ def frames():
 
         cv2.waitKey(1)
 
+@app.teardown_appcontext
+def close_camera(exception):
+    if cap.isOpened():
+        cap.release()
+        cv2.destroyAllWindows()
+
 if __name__ == "__main__":
-    app.run(debug=False, host='0.0.0.0', port=5475)
+    app.run(debug=True, host='0.0.0.0', port=5475)
