@@ -5,13 +5,14 @@ from cvzone.HandTrackingModule import HandDetector
 from dbconnector import DatabaseOperations
 
 app = Flask(__name__)
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)  # Open the default camera
 detector = HandDetector(detectionCon=0.9)
 
 # Instantiate the DatabaseOperations class for MongoDB
 databaseConnection = DatabaseOperations()
 
 @app.route('/')
+@app.route('/home')
 def index():
     return render_template('homepage.html')
 
@@ -67,11 +68,16 @@ def frames():
     qTotal = len(mcqList)
 
     while True:
-        success, img = cap.read()
+        success, img = cap.read()  # Read a frame from the camera
+        if not success or img is None:  # Check if the frame was captured successfully
+            print("Error: Unable to capture video frame.")
+            continue  # Skip to the next iteration if the frame is not captured
+
         img = cv2.flip(img, 1)
         new_width = 1200  # Adjust this value based on your preference
         new_height = 700
         img = cv2.resize(img, (new_width, new_height))
+
         hands, img = detector.findHands(img, flipType=False)
 
         if qNo < qTotal:
