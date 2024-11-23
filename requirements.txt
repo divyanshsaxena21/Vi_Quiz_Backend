@@ -5,3 +5,4 @@ opencv-python-headless
 cvzone
 numpy
 gunicorn
+mediapipe
