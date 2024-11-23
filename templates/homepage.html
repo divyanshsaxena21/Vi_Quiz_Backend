@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ViQuiz - Visual Quiz Game</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='homepage.css') }}">
+    <link rel="stylesheet" href="../static/homepage.css">
 </head>
 <body>
     
@@ -14,23 +14,14 @@
     <main>
         <section id="quiz-container">
             <div id="root">
-                <img class="video" id="video_feed" src="{{ url_for('video_feed') }}" width="100%" height="auto" style="border:1px solid #000;" alt="Video feed for ViQuiz">
-                <div id="loading" style="display: none;">Loading video feed...</div>
+                <img class="video" id="video_feed" src="{{ url_for('video_feed') }}"  width="1000" height="550" style="border:1px solid #000;">
             </div>
         </section>
     </main>
     <footer>
         <p>&copy; 2023 ViQuiz. All rights reserved.</p>
     </footer>
+    <!-- <script src="./homejs.js"></script> -->
     
-    <script>
-        // Optionally add JavaScript here for further interactions
-        document.getElementById('video_feed').onload = function() {
-            document.getElementById('loading').style.display = 'none';
-        };
-        // Show loading message initially
-        document.getElementById('loading').style.display = 'block';
-    </script>
-
 </body>
 </html>
