@@ -3,30 +3,30 @@ import pymongo
 from flask import Flask, render_template, Response, request, jsonify
 from cvzone.HandTrackingModule import HandDetector
 from dotenv import load_dotenv  # Optional, for loading environment variables in development
-
+from dbconnector import DatabaseOperations
 # Load environment variables from .env file (if present)
 load_dotenv()
 
 app = Flask(__name__)
 
 # Instantiate the DatabaseOperations class for MongoDB
-class DatabaseOperations:
-    def __init__(self):
-        # Use the environment variable for MongoDB connection
-        self.client = pymongo.MongoClient(os.environ.get("MONGODB_URI"))
-        self.db = self.client['viquiz']  # Database name
-        self.collection = self.db['questions']  # Collection name
+# class DatabaseOperations:
+#     def __init__(self):
+#         # Use the environment variable for MongoDB connection
+#         self.client = pymongo.MongoClient(os.environ.get("MONGODB_URI"))
+#         self.db = self.client['viquiz']  # Database name
+#         self.collection = self.db['questions']  # Collection name
 
-    def insert_question(self, collection_name, document):
-        try:
-            self.db[collection_name].insert_one(document)
-            return True
-        except Exception as e:
-            print("Error inserting question:", e)
-            return False
+#     def insert_question(self, collection_name, document):
+#         try:
+#             self.db[collection_name].insert_one(document)
+#             return True
+#         except Exception as e:
+#             print("Error inserting question:", e)
+#             return False
 
-    def get_questions_from_database(self, collection_name):
-        return list(self.db[collection_name].find())
+#     def get_questions_from_database(self, collection_name):
+#         return list(self.db[collection_name].find())
 
 databaseConnection = DatabaseOperations()
 detector = HandDetector(detectionCon=0.9)
