@@ -7,7 +7,11 @@ from dbconnector import DatabaseOperations
 app = Flask(__name__)
 
 # Initialize video capture and hand detector
-cap = cv2.VideoCapture(0)  # Change the index if needed
+cap = cv2.VideoCapture(0)
+
+if not cap.isOpened():
+    print("Error: Camera not accessible.")
+    exit(1)  # Change the index if needed
 detector = HandDetector(detectionCon=0.9)
 
 # Instantiate the DatabaseOperations class for MongoDB
@@ -27,7 +31,7 @@ def add_question():
     data = request.get_json()  # Get the JSON data sent in the request
     if not data:
         return jsonify({"error": "No data provided"}), 400
-
+    print("Database connected")
     # Prepare the document to be inserted
     question_document = {
         "qNo": data.get("qNo"),
@@ -71,9 +75,8 @@ def frames():
 
     while True:
         success, img = cap.read()  # Read a frame from the camera
-        if not success or img is None:  # Check if the frame was captured successfully
-            print("Error: Unable to capture video frame.")
-            continue  # Skip to the next iteration if the frame is not captured
+        if not success:
+            break   # Skip to the next iteration if the frame is not captured
 
         img = cv2.flip(img, 1)
         new_width = 1200  # Adjust this value based on your preference
@@ -109,18 +112,12 @@ def frames():
             img, _ = cvzone.putTextRect(img, "Quiz Completed", [250, 300], 2, 2, offset=50, border=5)
             img, _ = cvzone.putTextRect(img, f"Your Score: {score}%", [700, 300], 2, 2, offset=50, border=5)
 
-        ret, buffer = cv2.imencode('.jpg', img)
-        frame = buffer.tobytes()
+        ret, buffer = cv2.imencode('.jpg', img)  # Encode the frame as JPEG
+        frame = buffer.tobytes()  # Convert the image to bytes
         yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n') 
 
         cv2.waitKey(1)
-
-@app.teardown_appcontext
-def close_camera(exception):
-    if cap.isOpened():
-        cap.release()
-        cv2.destroyAllWindows()
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5475)
