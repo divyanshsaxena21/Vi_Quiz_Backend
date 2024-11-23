@@ -59,6 +59,24 @@ def add_question():
     else:
         return jsonify({"error": "Failed to add question"}), 500
 
+# New endpoint to get questions from the database
+@app.route('/get_questions', methods=['GET'])
+def get_questions():
+    questions = databaseConnection.get_questions_from_database("demo")
+    formatted_questions = []
+    for question in questions:
+        formatted_questions.append({
+            "qNo": question.get("qNo"),
+            "question": question.get("question"),
+            "choices": [
+                question.get("choice1"),
+                question.get("choice2"),
+                question.get("choice3"),
+                question.get("choice4")
+            ]
+        })
+    return jsonify(formatted_questions)
+
 def frames():
     # This is where you would handle video frames if needed.
     # Implement this if server-side processing of video is required.
