@@ -1,11 +1,9 @@
 from flask import Flask, render_template, Response, request, jsonify
-import cv2
 import cvzone
 from cvzone.HandTrackingModule import HandDetector
 from dbconnector import DatabaseOperations
-
+import cv2
 app = Flask(__name__)
-
 def check_camera_availability():
     index = 0
     arr = []
@@ -31,8 +29,6 @@ if not cap.isOpened():
     print("Error: Camera not accessible.")
     exit(1)  # Change the index if needed
 detector = HandDetector(detectionCon=0.9)
-
-
 # Instantiate the DatabaseOperations class for MongoDB
 databaseConnection = DatabaseOperations()
 
@@ -47,10 +43,11 @@ def video_feed():
 
 @app.route('/add_question', methods=['POST'])
 def add_question():
-    data = request.get_json()  # Get the JSON data sent in the request
+    data = request.get_json()
     if not data:
         return jsonify({"error": "No data provided"}), 400
     print("Database connected")
+    
     # Prepare the document to be inserted
     question_document = {
         "qNo": data.get("qNo"),
@@ -92,10 +89,12 @@ def frames():
     qNo = 0
     qTotal = len(mcqList)
 
+    # Instead of capturing from a camera, we assume the video feed is provided via the browser.
     while True:
+        # Get the image from the user's browser via video feed
         success, img = cap.read()  # Read a frame from the camera
         if not success:
-            break   # Skip to the next iteration if the frame is not captured
+            break  # Skip to the next iteration if the frame is not captured
 
         img = cv2.flip(img, 1)
         new_width = 1200  # Adjust this value based on your preference
