@@ -36,15 +36,15 @@
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 video.srcObject = stream;
+                startButton.style.display = 'none'; // Hide start button after starting camera
+                processVideo(); // Start processing the video frames
             } catch (error) {
                 console.error("Error accessing camera: ", error);
                 alert("Unable to access the camera. Please check your permissions.");
             }
         }
 
-        startButton.addEventListener('click', startCamera);
-
-        // Add functionality to capture video frames and process them
+        // Process video frames
         function processVideo() {
             const context = canvas.getContext('2d');
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
@@ -52,7 +52,7 @@
             requestAnimationFrame(processVideo);
         }
 
-        video.addEventListener('loadeddata', processVideo);
+        startButton.addEventListener('click', startCamera);
     </script>
 </body>
 </html>
