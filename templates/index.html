@@ -3,10 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Camera Feed</title>
+    <title>ViQuiz - Visual Quiz Game</title>
+    <link rel="stylesheet" href="../static/homepage.css">
 </head>
 <body>
-    <h1>Camera Feed</h1>
-    <img src="{{ url_for('video_feed') }}" width="600" height="400">
+    
+    <header>
+        <h1>Welcome to ViQuiz - Visual Quiz Game</h1>
+    </header>
+    
+    <main>
+        <section id="quiz-container">
+            <div id="root">
+                <video id="video" width="1200" height="700" autoplay></video>
+                <img id="canvas" style="display:none;" />
+            </div>
+            <button id="start-button">Start Camera</button>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 ViQuiz. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const video = document.getElementById('video');
+        const startButton = document.getElementById('start-button');
+
+        // Start the camera
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+            } catch (error) {
+                console.error("Error accessing camera: ", error);
+                alert("Unable to access the camera. Please check your permissions.");
+            }
+        }
+
+        startButton.addEventListener('click', startCamera);
+    </script>
 </body>
 </html>
