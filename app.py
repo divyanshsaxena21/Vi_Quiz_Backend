@@ -1,3 +1,4 @@
+from bson import ObjectId
 import os
 import pymongo
 from flask import Flask, render_template, Response, request, jsonify
@@ -67,7 +68,14 @@ def add_question():
 def get_questions():
     try:
         questions = databaseConnection.get_questions_from_database("demo")
-        return jsonify(questions), 200
+        
+        # Convert ObjectId to string and filter out _id
+        questions_without_id = []
+        for question in questions:
+            question_dict = {k: (str(v) if isinstance(v, ObjectId) else v) for k, v in question.items() if k != "_id"}
+            questions_without_id.append(question_dict)
+        
+        return jsonify(questions_without_id), 200
     except Exception as e:
         print("Error fetching questions:", e)
         return jsonify({"error": "Failed to fetch questions"}), 500
