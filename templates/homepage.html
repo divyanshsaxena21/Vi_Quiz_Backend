@@ -31,7 +31,7 @@
         <p>&copy; 2023 ViQuiz. All rights reserved.</p>
     </footer>
 
-    <script>
+   <script>
     const video = document.getElementById('video');
     const canvas = document.getElementById('canvas');
     const startButton = document.getElementById('start-button');
@@ -42,6 +42,7 @@
 
     let currentQuestionIndex = 0;
     let questions = []; // To hold fetched questions
+    let score = 0; // To track the score
 
     // Function to start the camera
     async function startCamera() {
@@ -90,18 +91,27 @@
             choices.forEach((choice, i) => {
                 const choiceElement = document.createElement('button');
                 choiceElement.textContent = choice;
-                choiceElement.onclick = () => handleAnswer(i); // Handle answer click
+                choiceElement.onclick = () => handleAnswer(i + 1, question.answer); // Handle answer click (pass 1-based index)
                 choicesContainer.appendChild(choiceElement);
             });
         } else {
             questionText.textContent = "Quiz Completed!";
             choicesContainer.innerHTML = '';
+            errorMessage.textContent = ""; // Clear any error messages
         }
     }
 
     // Function to handle answer selection
-    function handleAnswer(selectedChoice) {
-        // Logic to check the answer (update score, move to next question)
+    function handleAnswer(selectedChoice, correctAnswer) {
+        // Logic to check the answer
+        if (selectedChoice === correctAnswer) {
+            score++;
+            alert("Correct! Your score is: " + score);
+        } else {
+            alert("Incorrect! The correct answer was: " + correctAnswer);
+        }
+
+        // Move to the next question
         currentQuestionIndex++;
         displayQuestion(currentQuestionIndex);
     }
@@ -118,6 +128,7 @@
 
     video.addEventListener('loadeddata', processVideo);
 </script>
+
 
 </body>
 </html>
