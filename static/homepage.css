@@ -19,6 +19,9 @@ h1 {
 #quiz-container {
     text-align: center;
 }
+#video {
+    transform: scaleX(-1); /* This will flip the video horizontally */
+}
 
 
 footer {
